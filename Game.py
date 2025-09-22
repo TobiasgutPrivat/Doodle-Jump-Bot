@@ -4,8 +4,8 @@ class Player:
     x: float # bottom
     y: float # left
     vy: float # vertical speed upwards
-    width: int = 20
-    height: int = 20
+    width: int = 30 # hitbox width
+    height: int = 60 # image height
 
     def __init__(self, x, y, vy=0):
         self.x = x
@@ -15,8 +15,8 @@ class Player:
 class Platform:
     x: float # bottom
     y: float # left
-    width: int = 60
-    height: int = 10
+    width: int = 60 # hitbox/image width
+    height: int = 17 # image height
 
     def __init__(self, x, y):
         self.x = x
