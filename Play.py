@@ -1,19 +1,25 @@
 from Game import Game
-from RenderGame import renderGameState
+from RenderGame import drawGameState
+from Replay import Replay
 import pygame
+import asyncio
 
-def playGame():
+async def playGame():
     game = Game()
+    replay = Replay(game.tickrate, game.seed)
     running = True
-    fps = 60
     steps = 0
 
     pygame.init()
     screen = pygame.display.set_mode((game.width, game.height))
 
+    # Set the title of the window
+    pygame.display.set_caption("Doodle Jump")
+
+
+    clock = pygame.time.Clock()
     while running:
-        clock = pygame.time.Clock()
-        clock.tick(fps)
+        clock.tick(game.tickrate)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -21,22 +27,25 @@ def playGame():
         
         keys = pygame.key.get_pressed()
 
-        timeSinceLastStep = pygame.time.get_ticks() - (steps / game.tickrate * 1000)
-        if timeSinceLastStep >= 1000 / game.tickrate:
-            # do a game step
-            action = None
-            if keys[pygame.K_LEFT]:
-                action = "left"
-            elif keys[pygame.K_RIGHT]:
-                action = "right"
+        # do a game step
+        action = None
+        if keys[pygame.K_LEFT]:
+            action = "left"
+        elif keys[pygame.K_RIGHT]:
+            action = "right"
 
-            game.step(action)
-            running = not game.done
-            steps += 1
+        game.step(action)
+        replay.actions.append(action)
+        running = not game.done
+        steps += 1
 
-        renderGameState(game, screen)
+        drawGameState(game, screen)
 
     pygame.quit()
 
+    # run replay
+    replay.play(2)
 
-if __name__ == "__main__": playGame()
+
+if __name__ == "__main__": 
+    asyncio.run(playGame())

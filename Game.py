@@ -35,13 +35,13 @@ class Game:
     platformGen: random.Random
     #monsters
 
-    tickrate: int = 20 # theoretical ticks per second
+    tickrate: int # theoretical ticks per second
     preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
-    g = -120 # gravity px/s
-    moveSpeed = 5
-    jumpSpeed = 200
+    g = -200 # gravity px/s^2
+    moveSpeed = 100 # px/s
+    jumpSpeed = 300 # px/s
 
-    def __init__(self, width=400, height=600, seed=None):
+    def __init__(self, width=400, height=600, seed=None, tickrate=60):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.seed = seed
@@ -56,6 +56,8 @@ class Game:
         self.platforms = [Platform(x=middle_x-Platform.width/2, y=height/10)] # starting platform
         self.platformGen = random.Random(self.seed)
         self.genPlatforms()
+
+        self.tickrate = tickrate
 
     def genPlatforms(self):
         from_y = self.elim_y
@@ -72,7 +74,7 @@ class Game:
         # Generate platforms until reaching to_y
         while last_y < to_y:
             x = self.platformGen.randint(0, self.width - Platform.width)
-            y = last_y + self.platformGen.randint(10, 100)
+            y = last_y + self.platformGen.randint(10, 150)
             self.platforms.append(Platform(x, y))
             last_y = y
 
@@ -84,9 +86,9 @@ class Game:
         # Apply action
         old_x = self.player.x
         if action == "left":
-            self.player.x -= self.moveSpeed
+            self.player.x -= self.moveSpeed / self.tickrate
         elif action == "right":
-            self.player.x += self.moveSpeed
+            self.player.x += self.moveSpeed / self.tickrate
 
         self.player.x = self.player.x % self.width # wrap around screen
 
@@ -109,7 +111,7 @@ class Game:
             self.player.vy = self.jumpSpeed
 
         # Game over condition
-        if self.player.y > self.elim_y + self.height:
+        if self.player.y < self.elim_y:
             self.done = True
 
         self.genPlatforms()
