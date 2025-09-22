@@ -25,6 +25,7 @@ class Platform:
     # can make tick method as well for moving platforms etc. (abstractions)
 
 class Game:
+    done: bool = False
     width: int # screen width
     height: int # screen height
     max_y: int = 0 # highest point reached
@@ -34,7 +35,7 @@ class Game:
     platformGen: random.Random
     #monsters
 
-    tickrate: int # theoretical ticks per second
+    tickrate: int = 20 # theoretical ticks per second
     preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
 
     def __init__(self, width=400, height=600, seed=None):
@@ -44,7 +45,7 @@ class Game:
         self.height = height
         middle_x = width // 2
         self.player = Player(middle_x+Player.width/2, height/5)
-        self.platforms = [Platform(x=middle_x+Platform.width/2, y=height/5)] # starting platform
+        self.platforms = [Platform(x=middle_x+Platform.width/2, y=height/10)] # starting platform
         self.platformGen = random.Random(seed)
         self.genPlatforms(0, self.preGenHeight)
 
@@ -67,7 +68,7 @@ class Game:
     def step(self, action):
         """Advance the game by one tick with given action"""
         if self.done:
-            return self.get_state(), 0, True
+            return
 
         # Apply action
         old_x = self.player.x
@@ -95,14 +96,3 @@ class Game:
         # Game over condition
         if self.player.y > self.max_y + self.height:
             self.done = True
-
-        return self.get_state(), self.player.y, self.done
-
-    def get_state(self):
-        """Return abstract state (for AI)"""
-        return {
-            "player_x": self.player.x,
-            "player_y": self.player.y,
-            "player_vy": self.player.vy,
-            "platforms": self.platforms,
-        }
