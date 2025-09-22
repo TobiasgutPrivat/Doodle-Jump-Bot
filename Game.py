@@ -1,38 +1,52 @@
-import pygame
 import random
-# import enum
-
 
 class Player:
-    x: float
-    y: float
+    x: float # bottom
+    y: float # left
     vy: float # vertical speed upwards
+    width: int = 20
+    height: int = 20
 
-# class PlatformType(enum.Enum):
-#     NORMAL = 0
-#     MOVING = 1
-#     BREAKABLE = 2
+    def __init__(self, x, y, vy=0):
+        self.x = x
+        self.y = y
+        self.vy = vy
 
 class Platform:
-    x: float
-    y: float
-    # type: PlatformType
+    x: float # bottom
+    y: float # left
+    width: int = 60
+    height: int = 10
 
-class DoodleJump:
-    tickrate: int # ticks per second
-    width: int
-    height: int
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    # can make tick method as well for moving platforms etc. (abstractions)
+
+class Game:
+    width: int # screen width
+    height: int # screen height
+    max_y: int = 0 # highest point reached
     seed: int # deterministic seed for world generation
     player: Player
     platforms: list[Platform] = [] # maybe: index for y-level
     platformGen: random.Random
     #monsters
 
-    def __init__(self, width=400, height=600, tickrate=20, seed=0):
+    tickrate: int # theoretical ticks per second
+    preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
+
+    def __init__(self, width=400, height=600, seed=None):
+        if seed is None:
+            seed = random.randint(0, 2**32 - 1)
         self.width = width
         self.height = height
-        self.tickrate = tickrate
+        middle_x = width // 2
+        self.player = Player(middle_x+Player.width/2, height/5)
+        self.platforms = [Platform(x=middle_x+Platform.width/2, y=height/5)] # starting platform
         self.platformGen = random.Random(seed)
+        self.genPlatforms(0, self.preGenHeight)
 
     def genPlatforms(self, from_y: int, to_y: int):
         last_y = from_y
@@ -62,10 +76,14 @@ class DoodleJump:
         elif action == "right":
             self.player.x += 5
 
+        self.player.x = self.player.x % self.width # wrap around screen
+
         # Physics
         self.player.vy += -9.81 / self.tickrate
         old_y = self.player.y
-        self.player.y += self.player.vy / self.tickrate
+        self.player.y += old_y / self.tickrate
+
+        self.max_y = max(self.max_y, self.player.y)
 
         # Collision with platform
         filter_platforms = [p for p in self.platforms if 
@@ -75,7 +93,7 @@ class DoodleJump:
             self.player.vy = 100
 
         # Game over condition
-        if self.player.y > self.height:
+        if self.player.y > self.max_y + self.height:
             self.done = True
 
         return self.get_state(), self.player.y, self.done
