@@ -78,16 +78,17 @@ class Game:
             self.platforms.append(Platform(x, y))
             last_y = y
 
-    def step(self, action):
+    def step(self, action: int):
         """Advance the game by one tick with given action"""
         if self.done:
             return
 
         # Apply action
-        old_x = self.player.x
-        if action == "left":
+        if action == 0:
+            pass
+        elif action == 1:
             self.player.x -= self.moveSpeed / self.tickrate
-        elif action == "right":
+        elif action == 2:
             self.player.x += self.moveSpeed / self.tickrate
 
         self.player.x = self.player.x % self.width # wrap around screen

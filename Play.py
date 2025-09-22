@@ -28,11 +28,11 @@ async def playGame():
         keys = pygame.key.get_pressed()
 
         # do a game step
-        action = None
+        action = 0
         if keys[pygame.K_LEFT]:
-            action = "left"
+            action = 1
         elif keys[pygame.K_RIGHT]:
-            action = "right"
+            action = 2
 
         game.step(action)
         replay.actions.append(action)
