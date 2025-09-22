@@ -37,9 +37,9 @@ class Game:
 
     tickrate: int # theoretical ticks per second
     preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
-    g = -200 # gravity px/s^2
-    moveSpeed = 100 # px/s
-    jumpSpeed = 300 # px/s
+    g = -400 # gravity px/s^2
+    moveSpeed = 150 # px/s
+    jumpSpeed = 400 # px/s
 
     def __init__(self, width=400, height=600, seed=None, tickrate=60):
         if seed is None:
