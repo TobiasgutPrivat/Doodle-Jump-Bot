@@ -24,17 +24,17 @@ class Bot:
         Trains the bot using the PPO algorithm.
         """
         if not self.model:
-            self.model = PPO("MultiInputPolicy", self.env, verbose=1)
-        self.model.learn(total_timesteps, log_interval=10, progress_bar=True)
-        print("Training complete.")
+            self.load()
+
+        self.model.learn(total_timesteps, log_interval=5, progress_bar=True)
+        self.save()
 
     def play(self, max_steps) -> Replay:
         """
         Runs the bot in the environment for evaluation.
         """
-        if self.model is None:
-            raise ValueError("Model not loaded. Train or load a model first.")
-
+        if not self.model:
+            self.load()
 
         obs, info = self.env.reset()
         replay = Replay(self.env.game.tickrate, self.env.game.seed)
@@ -60,16 +60,15 @@ class Bot:
         """
         Loads the model from the specified path.
         """
-        if not os.path.exists(self.modelPath):
-            raise FileNotFoundError(f"No model found at {self.modelPath}. Train and save a model first.")
-        self.model = PPO.load(self.modelPath, env=self.env)
-        print(f"Model loaded from {self.modelPath}.")
+        if os.path.exists(self.modelPath):
+            self.model = PPO.load(self.modelPath, env=self.env)
+        else:
+            self.model = PPO("MultiInputPolicy", self.env, verbose=1)
 
 # Example usage
 if __name__ == "__main__":
     bot = Bot("Andrew")
 
-    # bot.load()
-    bot.train(100000)
-    bot.save()
-    bot.play(1000).play(2)
+    # bot.train(100000)
+    replay = bot.play(1000)
+    replay.play(1)

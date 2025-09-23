@@ -1,4 +1,5 @@
 import random
+from bisect import bisect_left
 
 class Player:
     x: float # bottom
@@ -29,14 +30,17 @@ class Game:
     width: int # screen width
     height: int # screen height
     elim_y: int = 0 # highest point reached
+    max_y: int = 0
     seed: int # deterministic seed for world generation
     player: Player
     platforms: list[Platform] = [] # maybe: index for y-level
     platformGen: random.Random
     #monsters
+    
+    steps: int
 
     tickrate: int # theoretical ticks per second
-    preGenHeight: int = 600 # how much to pre-generate platforms above the screen
+    preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
     g = -500 # gravity px/s^2
     moveSpeed = 150 # px/s
     jumpSpeed = 450 # px/s
@@ -58,11 +62,13 @@ class Game:
         self.genPlatforms()
 
         self.tickrate = tickrate
+        self.steps = 0
 
     def genPlatforms(self):
         to_y = self.elim_y + self.preGenHeight
         # Remove platforms below elim_y
-        self.platforms = [p for p in self.platforms if p.y > self.elim_y]
+        index = bisect_left([p.y for p in self.platforms], self.elim_y)
+        self.platforms = self.platforms[index:]
 
         # Start from last platform or elim_y
         if self.platforms:
@@ -98,21 +104,27 @@ class Game:
         self.player.y += self.player.vy / self.tickrate
 
         # Update highest point
-        if (self.player.y - self.height * 0.4) > self.elim_y:
-            self.elim_y = self.player.y - self.height * 0.4
-            self.genPlatforms()
+        if self.player.y > self.max_y:
+            self.max_y = self.player.y
 
-        # Collision with platform
         if self.player.vy <= 0:
-            platforms_below = [p for p in self.platforms if p.y + p.height/2 < old_y]
-            platforms_passed = [p for p in platforms_below if p.y + p.height >= self.player.y]
-            collision_platforms  = [p for p in platforms_passed if 
-                                p.x < self.player.x + self.player.width and 
-                                self.player.x < p.x + p.width]
-        
-            if any(collision_platforms):
-                self.player.vy = self.jumpSpeed
+            self.checkCollision(old_y)
 
         # Game over condition
         if self.player.y < self.elim_y:
             self.done = True
+
+        self.steps += 1
+
+    def checkCollision(self, old_y):
+        # Collision with platform
+        platforms_below = [p for p in self.platforms if p.y + p.height/2 < old_y]
+        platforms_passed = [p for p in platforms_below if p.y + p.height >= self.player.y]
+        collision_platforms  = [p for p in platforms_passed if 
+                            p.x < self.player.x + self.player.width and 
+                            self.player.x < p.x + p.width]
+    
+        if any(collision_platforms):
+            self.player.vy = self.jumpSpeed
+            self.elim_y = max(self.elim_y, self.player.y - self.height * 0.3)
+            self.genPlatforms()

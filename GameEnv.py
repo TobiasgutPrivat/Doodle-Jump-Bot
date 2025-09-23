@@ -1,23 +1,16 @@
 from Game import Game
-from Replay import Replay
-import gymnasium as gym
-from gymnasium import spaces
-import pickle as pkl
+from gymnasium import spaces, Env
 import numpy as np
-import os
-from numpy import ndarray
 
-class GameEnv(gym.Env): # or VecEnv possible
+class GameEnv(Env): # or VecEnv possible
     def __init__(self):
-        super(GameEnv, self).__init__()
+        super().__init__()
         
-        # Example: state = 4 floats, action = 3 discrete moves
         self.max_platforms = 5   # next 5 platforms
-        item_dim = 2    # (x, y) coordinates
 
         self.observation_space = spaces.Dict({
             "player_state": spaces.Box(low=-np.inf, high=np.inf, shape=(3,), dtype=np.float32),
-            "platforms": spaces.Box(low=-np.inf, high=np.inf, shape=(self.max_platforms, item_dim), dtype=np.float32)
+            "platforms": spaces.Box(low=-np.inf, high=np.inf, shape=(self.max_platforms, 2), dtype=np.float32)
         })
 
         self.action_space = spaces.Discrete(3)
@@ -29,27 +22,9 @@ class GameEnv(gym.Env): # or VecEnv possible
         }
 
     def reset(self, seed=None):
-        # Reset game state
         self.game = Game(seed=seed)
-        # maybe: self.game.preGenHeight = 500
         return self.getState(), {}
 
-    def step(self, action: ndarray):
-        # Apply action
-        action: int = int(action)
-        self.game.step(action)
-
-        # Get state
-        state = self.getState()
-        reward = self.game.elim_y  
-        terminated = self.game.done
-        truncated = False
-
-        return state, reward, terminated, truncated, {}
-    
-    def dumpReplays(self, folder):
-        for i, replay in enumerate(self.replays):
-            with open(os.path.join(folder, f"{i}.pkl"), "wb") as f:
-                pkl.dump(replay, f)
-
-        self.replays = []
+    def step(self, action):
+        self.game.step(int(action))
+        return self.getState(), self.game.elim_y, self.game.done, False, {}
