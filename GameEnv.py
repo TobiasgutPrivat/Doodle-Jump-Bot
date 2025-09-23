@@ -1,7 +1,6 @@
 from Game import Game
 from gymnasium import spaces, Env
 import numpy as np
-import math
 
 class GameEnv(Env): # or VecEnv possible
     lastHight = 0
@@ -14,10 +13,12 @@ class GameEnv(Env): # or VecEnv possible
         self.observation_space = spaces.Box(
             low=np.array([
                 -1,     # player vy
+                -1,
                 *([-1, -1] * self.max_platforms)
             ], dtype=np.float32),
             high=np.array([
                 1, # player vy
+                1,
                 *([1, 1] * self.max_platforms)
             ], dtype=np.float32),
             dtype=np.float32
@@ -27,7 +28,7 @@ class GameEnv(Env): # or VecEnv possible
         self.action_space = spaces.Discrete(3)
 
     def getState(self):
-        state = [self.game.player.vy / Game.maxSpeed]
+        state = [self.game.player.vy / Game.maxSpeed, self.game.player.vx / Game.maxSpeed]
 
         for p in self.game.platforms[:self.max_platforms]:
             state.extend([
@@ -43,7 +44,6 @@ class GameEnv(Env): # or VecEnv possible
 
     def step(self, action):
         reward = self.game.elim_y - self.lastHight # reward for reaching higher platforms ~50-100 per succesfull jump
-        # reward += 100 - min([math.sqrt(p.x**2 + p.y**2) for p in self.game.platforms[:self.max_platforms]]) / 20 # reward for beeing close to a platform (maybe remove when decent)
         self.lastHight = self.game.elim_y
         self.game.step(int(action))
         return self.getState(), reward, self.game.done, False, {}

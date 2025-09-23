@@ -24,7 +24,7 @@ class Bot:
         Trains the bot using the PPO algorithm.
         """
         self.load()
-        self.model.learn(total_timesteps, log_interval=5, progress_bar=True)
+        self.model.learn(total_timesteps, log_interval=50, progress_bar=True)
         self.save()
 
     def play(self, max_steps) -> Replay:
@@ -42,7 +42,7 @@ class Bot:
             if terminated or truncated:
                 break
         print(f"Finished after {step + 1} steps.")
-        print(f"Score: {reward}")
+        print(f"Score: {self.env.game.elim_y:.0f}")
         return replay
 
     def save(self):
@@ -62,12 +62,12 @@ class Bot:
         if os.path.exists(self.modelPath):
             self.model = PPO.load(self.modelPath, env=self.env)
         else:
-            self.model = PPO("MlpPolicy", self.env, verbose=1,ent_coef=0.05)
+            self.model = PPO("MlpPolicy", self.env, verbose=1,ent_coef=0.2)
 
 # Example usage
 if __name__ == "__main__":
     bot = Bot("Andrew")
 
-    bot.train(100000)
+    # bot.train(2000000)
     replay = bot.play(1000)
-    replay.play(10)
+    replay.play(1)

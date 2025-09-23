@@ -45,7 +45,7 @@ class Game:
     moveAcceleration = 400 # px/s
     slowdown = 0.6 # per second
     maxSpeed = 450 # px/s
-    elimBelPlatform = 100
+    elimBelPlatform = 0
     maxJump = 130
 
     def __init__(self, seed=None, tickrate=10):
