@@ -28,13 +28,13 @@ class Bot:
         os.makedirs(self.replayFolder, exist_ok=True)
         self.modelPath = os.path.join(self.folder, "model.zip")
 
-    def train(self, total_timesteps=1000):
+    def train(self, total_timesteps=10000):
         """
         Trains the bot using the PPO algorithm.
         """
         if not self.model:
             self.model = PPO("MultiInputPolicy", self.env, verbose=1)
-        self.model.learn(total_timesteps=total_timesteps)
+        self.model.learn(total_timesteps, log_interval=10, progress_bar=True)
         session_count = len([1 for name in os.listdir(self.trainFolder) if os.path.isdir(os.path.join(self.trainFolder, name))])
         sessionPath = os.path.join(self.trainFolder, f"Session {session_count+1}")
         os.makedirs(sessionPath, exist_ok=True)
@@ -55,7 +55,7 @@ class Bot:
             if terminated or truncated:
                 print(f"Finished after {step + 1} steps.")
                 print(f"Score: {reward}")
-                run_count = len([1 for name in os.listdir(self.trainFolder) if os.path.isdir(os.path.join(self.trainFolder, name))])
+                run_count = len([1 for name in os.listdir(self.replayFolder) if os.path.isdir(os.path.join(self.replayFolder, name))])
                 runFolder = os.path.join(self.replayFolder, f"Run {run_count+1}")
                 os.makedirs(runFolder, exist_ok=True)
                 self.env.dumpReplays(runFolder)
@@ -83,14 +83,7 @@ class Bot:
 if __name__ == "__main__":
     bot = Bot("Andrew")
 
-    # Train the bot
-    bot.train(total_timesteps=10000)
-
-    # Save the trained model
-    bot.save()
-
-    # Load the model
-    bot.load()
-
-    # Let the bot play
+    # bot.load()
+    bot.train(100000)
     bot.play(1000)
+    bot.save()

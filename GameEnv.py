@@ -5,12 +5,13 @@ from gymnasium import spaces
 import pickle as pkl
 import numpy as np
 import os
+from numpy import ndarray
 
 class GameEnv(gym.Env): # or VecEnv possible
     record: bool
     replays: list[Replay] = []
 
-    def __init__(self,record=False):
+    def __init__(self, record=False):
         self.record = record
 
         super(GameEnv, self).__init__()
@@ -41,8 +42,9 @@ class GameEnv(gym.Env): # or VecEnv possible
         
         return self.getState(), {}
 
-    def step(self, action):
+    def step(self, action: ndarray):
         # Apply action
+        action: int = int(action)
         self.game.step(action)
 
         if self.record:
@@ -50,7 +52,7 @@ class GameEnv(gym.Env): # or VecEnv possible
             
         # Get state
         state = self.getState()
-        reward = self.game.player.y  
+        reward = self.game.elim_y  
         terminated = self.game.done
         truncated = False
 

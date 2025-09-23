@@ -7,11 +7,12 @@ from Game import Game
 class Replay:
     tickrate: int
     seed: int
-    actions: list[str] = [] # 1 action per tick
+    actions: list[str] # 1 action per tick
 
     def __init__(self, tps, seed):
         self.tickrate = tps
         self.seed = seed
+        self.actions = []
 
     def play(self, xSpeed: int):
             game = Game(seed=self.seed, tickrate=self.tickrate)
@@ -36,8 +37,6 @@ def watchReplay(path, xSpeed: int):
     if path.endswith(".pkl"):
         with open(path, "rb") as f:
             replay = pkl.load(f)
-        if not isinstance(replay, Replay):
-            raise ValueError("Invalid replay file. Expect Replay object.")
         replay.play(xSpeed)
     elif os.path.isdir(path):
         files = [f for f in os.listdir(path) if f.endswith(".pkl")]
@@ -46,8 +45,10 @@ def watchReplay(path, xSpeed: int):
             with open(os.path.join(path, file), "rb") as f:
                 replays.append(pkl.load(f))
         for replay in replays:
-            if not isinstance(replay, Replay):
-                raise ValueError("Invalid replay file. Expect Replay object.")
             replay.play(xSpeed) #TODO play multiple replays at once
     else:
         raise ValueError("Invalid path. Expect pkl file or folder with pkl files.")
+
+if __name__ == "__main__":
+    watchReplay("Bots/Andrew/replay/Run 1/0.pkl", 2)
+    # watchReplay("Bots/Andrew/train/Session 2/487.pkl", 2)
