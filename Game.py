@@ -4,14 +4,14 @@ from bisect import bisect_left
 class Player:
     x: float # bottom
     y: float # left
-    vy: float # vertical speed upwards
+    vy: float = 0 # vertical speed upwards
+    vx: float = 0 # horizontal speed
     width: int = 30 # hitbox width
     height: int = 60 # image height
 
-    def __init__(self, x, y, vy=0):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.vy = vy
 
 class Platform:
     x: float # bottom
@@ -42,7 +42,8 @@ class Game:
     tickrate: int # theoretical ticks per second
     preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
     g = -600 # gravity px/s^2
-    moveSpeed = 150 # px/s
+    moveAcceleration = 400 # px/s
+    slowdown = 0.6 # per second
     maxSpeed = 450 # px/s
     elimBelPlatform = 100
     maxJump = 130
@@ -89,16 +90,21 @@ class Game:
             return
 
         # Apply action
+        self.player.vx *= 1 - (1 - self.slowdown)/self.tickrate
+
         if action == 0:
             pass
         elif action == 1:
-            self.player.x -= self.moveSpeed / self.tickrate
+            self.player.vx -= self.moveAcceleration / self.tickrate
         elif action == 2:
-            self.player.x += self.moveSpeed / self.tickrate
+            self.player.vx += self.moveAcceleration / self.tickrate
 
+        # Horizontal movement
+        self.player.vx = min(max(self.player.vx, -self.maxSpeed), self.maxSpeed) # limit speed
+        self.player.x = self.player.x + self.player.vx / self.tickrate
         self.player.x = (self.player.x + self.player.width/2) % self.width - self.player.width/2 # wrap around screen (use middle of player)
 
-        # Physics
+        # Vertical movement
         self.player.vy = max(self.player.vy + self.g / self.tickrate, -self.maxSpeed)
         old_y = self.player.y
         self.player.y += self.player.vy / self.tickrate
