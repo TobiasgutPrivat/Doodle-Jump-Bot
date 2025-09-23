@@ -5,7 +5,7 @@ import pygame
 import asyncio
 
 async def playGame():
-    game = Game()
+    game = Game(tickrate=60)
     replay = Replay(game.tickrate, game.seed)
     running = True
     steps = 0
@@ -44,7 +44,7 @@ async def playGame():
     pygame.quit()
 
     # run replay
-    replay.play(2)
+    # replay.play(2)
 
 
 if __name__ == "__main__": 

@@ -41,7 +41,7 @@ class Game:
     moveSpeed = 150 # px/s
     jumpSpeed = 400 # px/s
 
-    def __init__(self, width=400, height=600, seed=None, tickrate=60):
+    def __init__(self, width=400, height=600, seed=None, tickrate=20):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.seed = seed
@@ -91,7 +91,7 @@ class Game:
         elif action == 2:
             self.player.x += self.moveSpeed / self.tickrate
 
-        self.player.x = self.player.x % self.width # wrap around screen
+        self.player.x = (self.player.x + self.player.width/2) % self.width - self.player.width/2 # wrap around screen (use middle of player)
 
         # Physics
         self.player.vy += self.g / self.tickrate

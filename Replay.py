@@ -1,5 +1,7 @@
 from RenderGame import drawGameState
 import pygame
+import os
+import pickle as pkl
 from Game import Game
 
 class Replay:
@@ -29,3 +31,23 @@ class Replay:
                         running = False
                 game.step(self.actions.pop(0))
                 drawGameState(game, screen)
+
+def watchReplay(path, xSpeed: int):
+    if path.endswith(".pkl"):
+        with open(path, "rb") as f:
+            replay = pkl.load(f)
+        if not isinstance(replay, Replay):
+            raise ValueError("Invalid replay file. Expect Replay object.")
+        replay.play(xSpeed)
+    elif os.path.isdir(path):
+        files = [f for f in os.listdir(path) if f.endswith(".pkl")]
+        replays = []
+        for file in files:
+            with open(os.path.join(path, file), "rb") as f:
+                replays.append(pkl.load(f))
+        for replay in replays:
+            if not isinstance(replay, Replay):
+                raise ValueError("Invalid replay file. Expect Replay object.")
+            replay.play(xSpeed) #TODO play multiple replays at once
+    else:
+        raise ValueError("Invalid path. Expect pkl file or folder with pkl files.")

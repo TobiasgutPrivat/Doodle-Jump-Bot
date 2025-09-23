@@ -1,3 +1,4 @@
 pygame
-gym
+gymnasium
 stable_baselines3
+shimmy
