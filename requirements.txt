@@ -1,4 +1,4 @@
 pygame
 gymnasium
-stable_baselines3
+stable-baselines3[extra]
 shimmy

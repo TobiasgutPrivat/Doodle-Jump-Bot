@@ -27,8 +27,8 @@ class Platform:
 
 class Game:
     done: bool = False
-    width: int # screen width
-    height: int # screen height
+    width: int = 400 # screen width
+    height: int = 600 # screen height
     elim_y: int = 0 # highest point reached
     max_y: int = 0
     seed: int # deterministic seed for world generation
@@ -41,23 +41,23 @@ class Game:
 
     tickrate: int # theoretical ticks per second
     preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
-    g = -500 # gravity px/s^2
+    g = -600 # gravity px/s^2
     moveSpeed = 150 # px/s
-    jumpSpeed = 450 # px/s
+    maxSpeed = 450 # px/s
+    elimBelPlatform = 100
+    maxJump = 130
 
-    def __init__(self, width=400, height=600, seed=None, tickrate=5):
+    def __init__(self, seed=None, tickrate=10):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.seed = seed
 
         # init positions
-        self.width = width
-        self.height = height
-        middle_x = width // 2
+        middle_x = self.width // 2
 
         # init objects
-        self.player = Player(middle_x-Player.width/2, height/5)
-        self.platforms = [Platform(x=middle_x-Platform.width/2, y=height/10)] # starting platform
+        self.player = Player(middle_x-Player.width/2, self.height/5)
+        self.platforms = [Platform(x=middle_x-Platform.width/2, y=self.height/10)] # starting platform
         self.platformGen = random.Random(self.seed)
         self.genPlatforms()
 
@@ -79,7 +79,7 @@ class Game:
         # Generate platforms until reaching to_y
         while last_y < to_y:
             x = self.platformGen.randint(0, self.width - Platform.width)
-            y = last_y + self.platformGen.randint(10, 150)
+            y = last_y + self.platformGen.randint(10, self.maxJump)
             self.platforms.append(Platform(x, y))
             last_y = y
 
@@ -99,7 +99,7 @@ class Game:
         self.player.x = (self.player.x + self.player.width/2) % self.width - self.player.width/2 # wrap around screen (use middle of player)
 
         # Physics
-        self.player.vy += self.g / self.tickrate
+        self.player.vy = max(self.player.vy + self.g / self.tickrate, -self.maxSpeed)
         old_y = self.player.y
         self.player.y += self.player.vy / self.tickrate
 
@@ -125,6 +125,6 @@ class Game:
                             self.player.x < p.x + p.width]
     
         if any(collision_platforms):
-            self.player.vy = self.jumpSpeed
-            self.elim_y = max(self.elim_y, self.player.y - self.height * 0.3)
+            self.player.vy = self.maxSpeed
+            self.elim_y = max(self.elim_y, collision_platforms[0].y - self.elimBelPlatform)
             self.genPlatforms()

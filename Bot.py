@@ -23,9 +23,7 @@ class Bot:
         """
         Trains the bot using the PPO algorithm.
         """
-        if not self.model:
-            self.load()
-
+        self.load()
         self.model.learn(total_timesteps, log_interval=5, progress_bar=True)
         self.save()
 
@@ -33,19 +31,19 @@ class Bot:
         """
         Runs the bot in the environment for evaluation.
         """
-        if not self.model:
-            self.load()
+        self.load()
 
         obs, info = self.env.reset()
         replay = Replay(self.env.game.tickrate, self.env.game.seed)
         for step in range(max_steps):
-            action, _ = self.model.predict(obs)
+            action, _ = self.model.predict(obs, deterministic=True)
             replay.actions.append(int(action))
             obs, reward, terminated, truncated, info = self.env.step(action)
             if terminated or truncated:
-                print(f"Finished after {step + 1} steps.")
-                print(f"Score: {reward}")
-                return replay
+                break
+        print(f"Finished after {step + 1} steps.")
+        print(f"Score: {reward}")
+        return replay
 
     def save(self):
         """
@@ -54,21 +52,22 @@ class Bot:
         if self.model is None:
             raise ValueError("Model not trained. Train the model before saving.")
         self.model.save(self.modelPath)
-        print(f"Model saved to {self.modelPath}.")
 
     def load(self):
         """
         Loads the model from the specified path.
         """
+        if self.model:
+            return
         if os.path.exists(self.modelPath):
             self.model = PPO.load(self.modelPath, env=self.env)
         else:
-            self.model = PPO("MultiInputPolicy", self.env, verbose=1)
+            self.model = PPO("MlpPolicy", self.env, verbose=1,ent_coef=0.05)
 
 # Example usage
 if __name__ == "__main__":
     bot = Bot("Andrew")
 
-    # bot.train(100000)
+    bot.train(100000)
     replay = bot.play(1000)
-    replay.play(1)
+    replay.play(10)
