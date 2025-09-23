@@ -8,12 +8,7 @@ import os
 from numpy import ndarray
 
 class GameEnv(gym.Env): # or VecEnv possible
-    record: bool
-    replays: list[Replay] = []
-
-    def __init__(self, record=False):
-        self.record = record
-
+    def __init__(self):
         super(GameEnv, self).__init__()
         
         # Example: state = 4 floats, action = 3 discrete moves
@@ -37,9 +32,6 @@ class GameEnv(gym.Env): # or VecEnv possible
         # Reset game state
         self.game = Game(seed=seed)
         # maybe: self.game.preGenHeight = 500
-        if self.record:
-            self.replays.append(Replay(self.game.tickrate, self.game.seed))
-        
         return self.getState(), {}
 
     def step(self, action: ndarray):
@@ -47,9 +39,6 @@ class GameEnv(gym.Env): # or VecEnv possible
         action: int = int(action)
         self.game.step(action)
 
-        if self.record:
-            self.replays[-1].actions.append(action)
-            
         # Get state
         state = self.getState()
         reward = self.game.elim_y  

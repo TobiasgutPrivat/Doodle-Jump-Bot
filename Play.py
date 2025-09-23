@@ -10,12 +10,10 @@ async def playGame():
     running = True
     steps = 0
 
-    pygame.init()
     screen = pygame.display.set_mode((game.width, game.height))
 
     # Set the title of the window
     pygame.display.set_caption("Doodle Jump")
-
 
     clock = pygame.time.Clock()
     while running:
@@ -40,8 +38,6 @@ async def playGame():
         steps += 1
 
         drawGameState(game, screen)
-
-    pygame.quit()
 
     # run replay
     # replay.play(2)

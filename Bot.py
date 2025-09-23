@@ -1,13 +1,11 @@
 from stable_baselines3 import PPO
 from GameEnv import GameEnv
+from Replay import Replay
 import os
 
 class Bot:
     baseFolder: str = "Bots"
-    folder: str
-    trainFolder: str
     modelPath: str
-    name: str
     env: GameEnv
     model: PPO = None
 
@@ -15,18 +13,11 @@ class Bot:
         """
         Initializes the bot with the environment and model path.
         """
-        self.env = GameEnv(True)
-        self.name = name
+        self.env = GameEnv()
 
-        #Folderstructure
+        #storage
         os.makedirs(self.baseFolder, exist_ok=True)
-        self.folder = os.path.join(self.baseFolder, name)
-        os.makedirs(self.folder, exist_ok=True)
-        self.trainFolder = os.path.join(self.folder, "train")
-        os.makedirs(self.trainFolder, exist_ok=True)
-        self.replayFolder = os.path.join(self.folder, "replay")
-        os.makedirs(self.replayFolder, exist_ok=True)
-        self.modelPath = os.path.join(self.folder, "model.zip")
+        self.modelPath = os.path.join(self.baseFolder, name + ".zip")
 
     def train(self, total_timesteps=10000):
         """
@@ -35,31 +26,26 @@ class Bot:
         if not self.model:
             self.model = PPO("MultiInputPolicy", self.env, verbose=1)
         self.model.learn(total_timesteps, log_interval=10, progress_bar=True)
-        session_count = len([1 for name in os.listdir(self.trainFolder) if os.path.isdir(os.path.join(self.trainFolder, name))])
-        sessionPath = os.path.join(self.trainFolder, f"Session {session_count+1}")
-        os.makedirs(sessionPath, exist_ok=True)
-        self.env.dumpReplays(sessionPath)
         print("Training complete.")
 
-    def play(self, max_steps):
+    def play(self, max_steps) -> Replay:
         """
         Runs the bot in the environment for evaluation.
         """
         if self.model is None:
             raise ValueError("Model not loaded. Train or load a model first.")
 
+
         obs, info = self.env.reset()
+        replay = Replay(self.env.game.tickrate, self.env.game.seed)
         for step in range(max_steps):
             action, _ = self.model.predict(obs)
+            replay.actions.append(int(action))
             obs, reward, terminated, truncated, info = self.env.step(action)
             if terminated or truncated:
                 print(f"Finished after {step + 1} steps.")
                 print(f"Score: {reward}")
-                run_count = len([1 for name in os.listdir(self.replayFolder) if os.path.isdir(os.path.join(self.replayFolder, name))])
-                runFolder = os.path.join(self.replayFolder, f"Run {run_count+1}")
-                os.makedirs(runFolder, exist_ok=True)
-                self.env.dumpReplays(runFolder)
-                break
+                return replay
 
     def save(self):
         """
@@ -85,5 +71,5 @@ if __name__ == "__main__":
 
     # bot.load()
     bot.train(100000)
-    bot.play(1000)
     bot.save()
+    bot.play(1000).play(2)
