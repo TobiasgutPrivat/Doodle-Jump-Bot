@@ -9,11 +9,11 @@ class Bot:
     env: GameEnv
     model: PPO = None
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, env: GameEnv = None):
         """
         Initializes the bot with the environment and model path.
         """
-        self.env = GameEnv()
+        self.env = env or GameEnv()
 
         #storage
         os.makedirs(self.baseFolder, exist_ok=True)
@@ -66,8 +66,7 @@ class Bot:
 
 # Example usage
 if __name__ == "__main__":
-    bot = Bot("Andrew")
-
-    # bot.train(2000000)
+    bot = Bot("Short",GameEnv(500, 0, 2, 10)) # only see current and next platform, 0.2 entropy
+    bot.train(2000000)
     replay = bot.play(1000)
     replay.play(1)

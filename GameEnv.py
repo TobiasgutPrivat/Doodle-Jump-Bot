@@ -4,11 +4,18 @@ import numpy as np
 
 class GameEnv(Env): # or VecEnv possible
     lastHight = 0
+    preGenHeight: int
+    elimBelPlatform: int
+    max_platforms: int
+    tickrate: int
 
-    def __init__(self):
+    def __init__(self, preGenHeight=100, elimBelPlatform=100, max_platforms=5, tickrate=10):
         super().__init__()
         
-        self.max_platforms = 3
+        self.preGenHeight = preGenHeight
+        self.elimBelPlatform = elimBelPlatform
+        self.max_platforms = max_platforms
+        self.tickrate = tickrate
 
         self.observation_space = spaces.Box(
             low=np.array([
@@ -33,13 +40,18 @@ class GameEnv(Env): # or VecEnv possible
         for p in self.game.platforms[:self.max_platforms]:
             state.extend([
                 ((p.x - self.game.player.x + 1)/(Game.width/2)) % 2 - 1, # x relative to player in [-200,200] (use closer direction)
-                ((p.y - self.game.player.y) / (Game.preGenHeight + Game.maxJump)) - 1
+                ((p.y - self.game.player.y) / (self.preGenHeight + self.elimBelPlatform)) - 1
             ])
 
         return state
 
     def reset(self, seed=None):
         self.game = Game(seed=seed) # changing Game properties do effect the outcome
+        self.game.preGenHeight = self.preGenHeight
+        self.game.elimBelPlatform = self.elimBelPlatform
+        self.game.tickrate = self.tickrate
+        
+        self.lastHight = 0
         return self.getState(), {}
 
     def step(self, action):

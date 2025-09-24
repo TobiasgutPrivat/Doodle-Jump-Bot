@@ -39,16 +39,17 @@ class Game:
     
     steps: int
 
-    tickrate: int # theoretical ticks per second
+    # default game parameters
+    tickrate: int = 60 # theoretical ticks per second
     preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
     g = -600 # gravity px/s^2
     moveAcceleration = 400 # px/s
     slowdown = 0.6 # per second
     maxSpeed = 450 # px/s
-    elimBelPlatform = 0
+    elimBelPlatform = 100
     maxJump = 130
 
-    def __init__(self, seed=None, tickrate=10):
+    def __init__(self, seed=None):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.seed = seed
@@ -62,7 +63,6 @@ class Game:
         self.platformGen = random.Random(self.seed)
         self.genPlatforms()
 
-        self.tickrate = tickrate
         self.steps = 0
 
     def genPlatforms(self):
