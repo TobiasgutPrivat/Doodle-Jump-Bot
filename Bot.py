@@ -34,7 +34,7 @@ class Bot:
         self.load()
 
         obs, info = self.env.reset()
-        replay = Replay(self.env.game.tickrate, self.env.game.seed)
+        replay = Replay(self.env.game.seed,self.env.preGenHeight, self.env.elimBelPlatform, self.env.tickrate)
         for step in range(max_steps):
             action, _ = self.model.predict(obs, deterministic=True)
             replay.actions.append(int(action))
@@ -67,6 +67,6 @@ class Bot:
 # Example usage
 if __name__ == "__main__":
     bot = Bot("Short",GameEnv(250, 0, 2, 10)) # only see current and next platform, 0.2 entropy
-    # bot.train(2000000)
+    bot.train(2000000)
     replay = bot.play(1000)
     replay.play(1)

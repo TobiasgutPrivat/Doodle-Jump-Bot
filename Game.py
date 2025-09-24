@@ -1,4 +1,5 @@
 import random
+import math
 from bisect import bisect_left
 
 class Player:
@@ -40,19 +41,22 @@ class Game:
     steps: int
 
     # default game parameters
-    tickrate: int = 60 # theoretical ticks per second
-    preGenHeight: int = 1000 # how much to pre-generate platforms above the screen
-    g = -600 # gravity px/s^2
-    moveAcceleration = 400 # px/s
-    slowdown = 0.6 # per second
-    maxSpeed = 450 # px/s
-    elimBelPlatform = 100
-    maxJump = 130
+    tickrate: int # theoretical ticks per second (in theory should only effect input sensitivity not physics)
+    preGenHeight: int # how much to pre-generate platforms above the screen
+    g: int = -600 # gravity px/s^2
+    moveAcceleration: int = 400 # px/s
+    slowdown: float = 0.6 # per second
+    maxSpeed: int = 450 # px/s
+    elimBelPlatform: int
+    maxJump: int = 130
 
-    def __init__(self, seed=None):
+    def __init__(self, seed=None, preGenHeight=1000, elimBelPlatform=100, tickrate=60):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.seed = seed
+        self.preGenHeight = preGenHeight
+        self.elimBelPlatform = elimBelPlatform
+        self.tickrate = tickrate
 
         # init positions
         middle_x = self.width // 2
@@ -89,32 +93,38 @@ class Game:
         if self.done:
             return
 
-        # Apply action
-        self.player.vx *= 1 - (1 - self.slowdown)/self.tickrate
+        time = 1 / self.tickrate # seconds
+        old_vx = self.player.vx
+        old_x = self.player.x
+        old_vy = self.player.vy
+        old_y = self.player.y
 
+        # Apply action
         if action == 0:
             pass
         elif action == 1:
-            self.player.vx -= self.moveAcceleration / self.tickrate
+            self.player.vx -= self.moveAcceleration * time
         elif action == 2:
-            self.player.vx += self.moveAcceleration / self.tickrate
+            self.player.vx += self.moveAcceleration * time
 
         # Horizontal movement
-        self.player.vx = min(max(self.player.vx, -self.maxSpeed), self.maxSpeed) # limit speed
-        self.player.x = self.player.x + self.player.vx / self.tickrate
+        self.player.vx *= 1 - (1 - self.slowdown)/self.tickrate # air-friction
+        self.player.x += old_vx * time + self.moveAcceleration * (time**2) / 2
         self.player.x = (self.player.x + self.player.width/2) % self.width - self.player.width/2 # wrap around screen (use middle of player)
 
         # Vertical movement
-        self.player.vy = max(self.player.vy + self.g / self.tickrate, -self.maxSpeed)
-        old_y = self.player.y
-        self.player.y += self.player.vy / self.tickrate
+        self.player.vy = max(self.player.vy + self.g * time, -self.maxSpeed)
+        self.player.y += old_vy * time + self.g * (time**2) / 2
 
         # Update highest point
         if self.player.y > self.max_y:
             self.max_y = self.player.y
 
         if self.player.vy <= 0:
-            self.checkCollision(old_y)
+            if (collided_y := self.checkCollision(old_y)) is not None:
+                timeAfterCol = time - (old_vy + math.sqrt(old_vy**2 + 2 * self.g * (collided_y - old_y)))/self.g
+                self.player.vy = self.maxSpeed + self.g * timeAfterCol
+                self.player.y = collided_y + self.maxSpeed * timeAfterCol + self.g * (timeAfterCol**2) / 2
 
         # Game over condition
         if self.player.y < self.elim_y:
@@ -122,7 +132,7 @@ class Game:
 
         self.steps += 1
 
-    def checkCollision(self, old_y):
+    def checkCollision(self, old_y) -> int | None: # return collided at y level
         # Collision with platform
         platforms_below = [p for p in self.platforms if p.y + p.height/2 < old_y]
         platforms_passed = [p for p in platforms_below if p.y + p.height >= self.player.y]
@@ -135,3 +145,6 @@ class Game:
             collided_platform = sorted(collision_platforms, key=lambda p: p.y)[0]
             self.elim_y = max(self.elim_y, collided_platform.y - self.elimBelPlatform)
             self.genPlatforms()
+            return collided_platform.y
+
+        return None

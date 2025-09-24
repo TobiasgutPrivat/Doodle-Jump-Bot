@@ -5,16 +5,19 @@ from Game import Game
 class Replay:
     tickrate: int
     seed: int
+    preGenHeight: int
+    elimBelPlatform: int
     actions: list[str] # 1 action per tick
 
-    def __init__(self, tps, seed):
-        self.tickrate = tps
+    def __init__(self, seed=None, preGenHeight=100, elimBelPlatform=100, tickrate=60):
+        self.preGenHeight = preGenHeight
+        self.elimBelPlatform = elimBelPlatform
+        self.tickrate = tickrate
         self.seed = seed
         self.actions = []
 
     def play(self, xSpeed: int):
-            game = Game(seed=self.seed)
-            game.tickrate = self.tickrate
+            game = Game(self.seed, self.preGenHeight, self.elimBelPlatform, self.tickrate)
             screen = pygame.display.set_mode((game.width, game.height))
 
             # Set the title of the window

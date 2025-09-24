@@ -46,10 +46,7 @@ class GameEnv(Env): # or VecEnv possible
         return state
 
     def reset(self, seed=None):
-        self.game = Game(seed=seed) # changing Game properties do effect the outcome
-        self.game.preGenHeight = self.preGenHeight
-        self.game.elimBelPlatform = self.elimBelPlatform
-        self.game.tickrate = self.tickrate
+        self.game = Game(seed, self.preGenHeight, self.elimBelPlatform, self.tickrate) # changing Game properties do effect the outcome
         
         self.lastHight = 0
         return self.getState(), {}
