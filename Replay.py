@@ -13,7 +13,8 @@ class Replay:
         self.actions = []
 
     def play(self, xSpeed: int):
-            game = Game(seed=self.seed, tickrate=self.tickrate)
+            game = Game(seed=self.seed)
+            game.tickrate = self.tickrate
             screen = pygame.display.set_mode((game.width, game.height))
 
             # Set the title of the window

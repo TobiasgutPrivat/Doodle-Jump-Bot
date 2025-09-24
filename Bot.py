@@ -66,7 +66,7 @@ class Bot:
 
 # Example usage
 if __name__ == "__main__":
-    bot = Bot("Short",GameEnv(500, 0, 2, 10)) # only see current and next platform, 0.2 entropy
-    bot.train(2000000)
+    bot = Bot("Short",GameEnv(250, 0, 2, 10)) # only see current and next platform, 0.2 entropy
+    # bot.train(2000000)
     replay = bot.play(1000)
     replay.play(1)

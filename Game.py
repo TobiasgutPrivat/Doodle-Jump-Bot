@@ -84,7 +84,7 @@ class Game:
             self.platforms.append(Platform(x, y))
             last_y = y
 
-    def step(self, action: int):
+    def step(self, action: int): #TODO improve physics for low tickrate
         """Advance the game by one tick with given action"""
         if self.done:
             return
@@ -132,5 +132,6 @@ class Game:
     
         if any(collision_platforms):
             self.player.vy = self.maxSpeed
-            self.elim_y = max(self.elim_y, collision_platforms[0].y - self.elimBelPlatform)
+            collided_platform = sorted(collision_platforms, key=lambda p: p.y)[0]
+            self.elim_y = max(self.elim_y, collided_platform.y - self.elimBelPlatform)
             self.genPlatforms()
