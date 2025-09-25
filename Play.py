@@ -1,5 +1,5 @@
 from Game import Game
-from RenderGame import drawGameState
+from RenderGame import drawGame, set_size
 from Replay import Replay
 import pygame
 import asyncio
@@ -10,10 +10,11 @@ async def playGame():
     running = True
     steps = 0
 
-    screen = pygame.display.set_mode((game.width, game.height))
+    set_size(game.width, game.height)
 
     # Set the title of the window
     pygame.display.set_caption("Doodle Jump")
+
 
     clock = pygame.time.Clock()
     while running:
@@ -37,7 +38,9 @@ async def playGame():
         running = not game.done
         steps += 1
 
-        drawGameState(game, screen)
+        drawGame(game)
+
+        pygame.display.flip()
 
     # run replay
     # replay.play(2)

@@ -3,6 +3,7 @@ import math
 from bisect import bisect_left
 
 class Player:
+    name: str
     x: float # bottom
     y: float # left
     vy: float = 0 # vertical speed upwards
@@ -10,7 +11,8 @@ class Player:
     width: int = 30 # hitbox width
     height: int = 60 # image height
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, name=""):
+        self.name = name
         self.x = x
         self.y = y
 
@@ -50,7 +52,7 @@ class Game:
     elimBelPlatform: int
     maxJump: int = 130
 
-    def __init__(self, seed=None, preGenHeight=1000, elimBelPlatform=100, tickrate=60):
+    def __init__(self, seed=None, preGenHeight=1000, elimBelPlatform=100, tickrate=60, name=""):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.seed = seed
@@ -62,15 +64,15 @@ class Game:
         middle_x = self.width // 2
 
         # init objects
-        self.player = Player(middle_x-Player.width/2, self.height/5)
+        self.player = Player(middle_x-Player.width/2, self.height/5,name)
         self.platforms = [Platform(x=middle_x-Platform.width/2, y=self.height/10)] # starting platform
         self.platformGen = random.Random(self.seed)
         self.genPlatforms()
 
         self.steps = 0
 
-    def genPlatforms(self):
-        to_y = self.elim_y + self.preGenHeight
+    def genPlatforms(self, height=None):
+        to_y = self.elim_y + (height or self.preGenHeight)
         # Remove platforms below elim_y
         index = bisect_left([p.y for p in self.platforms], self.elim_y)
         self.platforms = self.platforms[index:]

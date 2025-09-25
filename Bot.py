@@ -27,13 +27,13 @@ class Bot:
         self.model.learn(total_timesteps, log_interval=50, progress_bar=True)
         self.save()
 
-    def play(self, max_steps) -> Replay:
+    def play(self, max_steps, seed=None) -> Replay:
         """
         Runs the bot in the environment for evaluation.
         """
         self.load()
 
-        obs, info = self.env.reset()
+        obs, info = self.env.reset(seed)
         replay = Replay(self.env.game.seed,self.env.preGenHeight, self.env.elimBelPlatform, self.env.tickrate)
         for step in range(max_steps):
             action, _ = self.model.predict(obs, deterministic=True)
