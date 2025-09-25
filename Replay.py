@@ -37,6 +37,8 @@ def playComparison(replays: list[Replay], xSpeed: int = 1):
     """
     assumes same game parameters
     """
+    if replays == []:
+        return
     games: list[tuple[Replay,Game]] = [(replay,Game(replay.seed, replay.preGenHeight, replay.elimBelPlatform, replay.tickrate, replay.name)) for replay in replays]
     display_game = Game(replays[0].seed, 1000) # used to draw base
     max_y = display_game.max_y
