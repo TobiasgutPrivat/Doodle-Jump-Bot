@@ -43,7 +43,7 @@ class Bot:
             self.meta.trainedSteps += steps
             if record:
                 replay = self.play(steps, seed=0)
-                replay.name = f"{self.meta.trainedSteps/1000}k"
+                replay.name = f"{self.meta.trainedSteps/1000:.0f}k"
                 self.meta.replays[self.meta.trainedSteps] = replay
             
         self.save()
