@@ -86,7 +86,7 @@ class Game:
         # Generate platforms until reaching to_y
         while last_y < to_y:
             x = self.platformGen.randint(0, self.width - Platform.width)
-            y = last_y + self.platformGen.randint(10, self.maxJump)
+            y = last_y + self.platformGen.randint(30, self.maxJump)
             self.platforms.append(Platform(x, y))
             last_y = y
 
